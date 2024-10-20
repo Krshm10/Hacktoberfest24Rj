@@ -1,0 +1,157 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <ctime>
+#include <chrono>
+
+using namespace std;
+
+struct Task {
+    string name;
+    bool completed;
+};
+
+struct Event {
+    string name;
+    string date;  // Format: YYYY-MM-DD
+};
+
+vector<Task> tasks;
+vector<Event> events;
+
+void loadTasks() {
+    ifstream file("tasks.txt");
+    if (!file.is_open()) return;
+    
+    string taskName;
+    bool completed;
+    while (file >> completed) {
+        getline(file, taskName);
+        tasks.push_back({taskName, completed});
+    }
+    
+    file.close();
+}
+
+void loadEvents() {
+    ifstream file("events.txt");
+    if (!file.is_open()) return;
+    
+    string eventName, date;
+    while (getline(file, eventName) && getline(file, date)) {
+        events.push_back({eventName, date});
+    }
+    
+    file.close();
+}
+
+void saveTasks() {
+    ofstream file("tasks.txt");
+    for (const auto& task : tasks) {
+        file << task.completed << " " << task.name << endl;
+    }
+    file.close();
+}
+
+void saveEvents() {
+    ofstream file("events.txt");
+    for (const auto& event : events) {
+        file << event.name << endl << event.date << endl;
+    }
+    file.close();
+}
+
+void addTask() {
+    string taskName;
+    cout << "Enter task description: ";
+    cin.ignore();
+    getline(cin, taskName);
+    tasks.push_back({taskName, false});
+    saveTasks();
+    cout << "Task added!" << endl;
+}
+
+void addEvent() {
+    string eventName, eventDate;
+    cout << "Enter event name: ";
+    cin.ignore();
+    getline(cin, eventName);
+    cout << "Enter event date (YYYY-MM-DD): ";
+    getline(cin, eventDate);
+    events.push_back({eventName, eventDate});
+    saveEvents();
+    cout << "Event added!" << endl;
+}
+
+void showTasks() {
+    cout << "\nTo-Do List:" << endl;
+    if (tasks.empty()) {
+        cout << "No tasks found!" << endl;
+        return;
+    }
+    
+    for (size_t i = 0; i < tasks.size(); ++i) {
+        cout << (i + 1) << ". " << tasks[i].name;
+        if (tasks[i].completed) cout << " [Completed]";
+        cout << endl;
+    }
+}
+
+void markTaskComplete() {
+    showTasks();
+    if (tasks.empty()) return;
+    
+    int taskNum;
+    cout << "Enter task number to mark as complete: ";
+    cin >> taskNum;
+    if (taskNum > 0 && taskNum <= tasks.size()) {
+        tasks[taskNum - 1].completed = true;
+        saveTasks();
+        cout << "Task marked as complete!" << endl;
+    } else {
+        cout << "Invalid task number!" << endl;
+    }
+}
+
+void showEvents() {
+    cout << "\nUpcoming Events:" << endl;
+    if (events.empty()) {
+        cout << "No events found!" << endl;
+        return;
+    }
+    
+    for (size_t i = 0; i < events.size(); ++i) {
+        cout << (i + 1) << ". " << events[i].name << " on " << events[i].date << endl;
+    }
+}
+
+
+int main() {
+    loadTasks();
+    loadEvents();
+
+    int choice;
+    do {
+        cout << "\nTo-Do List and Event Notifier" << endl;
+        cout << "1. Add Task" << endl;
+        cout << "2. Mark Task Complete" << endl;
+        cout << "3. Show Tasks" << endl;
+        cout << "4. Add Event" << endl;
+        cout << "5. Show Events" << endl;
+        cout << "0. Exit" << endl;
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1: addTask(); break;
+            case 2: markTaskComplete(); break;
+            case 3: showTasks(); break;
+            case 4: addEvent(); break;
+            case 5: showEvents(); break;
+            case 0: cout << "Exiting..." << endl; break;
+            default: cout << "Invalid choice! Try again." << endl;
+        }
+    } while (choice != 0);
+
+    return 0;
+}
